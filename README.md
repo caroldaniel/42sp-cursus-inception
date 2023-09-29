@@ -58,9 +58,9 @@ The project
 
 ### Implementation Guide
 
-As I've done in the `born2beroot` project, this one also calls for a complete Implementation guide.
+As I've done in the `born2beroot` project, Inception also calls for a complete implementation guide, full of twists and turns and a whole lot of concept explanaitions.
 
-As per usual, do not trust anything I say here. This is more for my benefit then yours. However, I'll be happy if I can help to unstuck at least one lost soul during it.
+As per usual, do not trust anything I say here. These guides are more for my own benefit then yours. However, I'll be happy if it cahappens to unstuck at least one lost soul in its lifetime.
 
-- Implementation guide for [Debian](guides/Debian-en.md)
+- Implementation guide for [Mandatory](guides/Mandatory-en.md)
 - Implementation guide for the [Bonus](guides/Bonus-en.md)

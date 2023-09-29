@@ -1,12 +1,12 @@
 <h1 align=center>
-	<b>Debian</b>
+	<b>Mandatory</b>
 </h1>
 
 <p align=center>
-	This implementation guide will help you implement a collection of Docker containers that will each serve a specific purpose, and connect to each other to build a whole, simple, web infrastructure.
+	<b>Inception</b> is a project that aims for us to broaden our knowledge on system administration. We need to virtualize several Docker images, creating them in a personal virtual machine. Each service should run in a different container, but all of them should be called from a docker-compose.yml file and be connected to a single docker-network.
 </p>
 <p align=center>
-	For this task we could choose between 2 available images: <b>Alpine Linux</b> or <b>Debian</b>. I chose Debian for this project, which I will explain in details down below.
+	In order to start this task we must choose between 2 available images: <b>Alpine Linux</b> or <b>Debian</b>. I consider Debian to be the obvious choise, for reasons that will be explained later on.
 </p>
 
 
@@ -29,6 +29,39 @@ Pre-Requisites
 </h2>
 
 <p> The project will be run entirely on a Virtual Machine, so the initial setup consists of only two downloadables:
+
+- <a href="https://www.virtualbox.org/wiki/Downloads">VirtualBox</a>: VirtualBox is a general-purpose full virtualizer, aimed at enabling users to run multiple operating systems in virtual machines. For this project, we will be using VirtualBox to run a Ubuntu system on top of our own OS.
+- <a href="https://ubuntu.com/download/desktop">Ubuntu</a>: Ubuntu is an open-source operating system that runs from the desktop, to the cloud, to all your internet connected things. We will be using Ubuntu inside our VirtualBox to run the project.
+
+I will not be covering the installation of these two, as they are pretty straightforward. If you have any issues, you can find plenty of tutorials online.
+
+Once you have your Virtual Machine up and running, you will need to install Docker. To do so, you can follow the steps below:
+
+1. Update and upgrade your system:
+
+```bash
+sudo apt-get update && sudo apt-get upgrade
+```
+
+2. Install Docker:
+
+```bash
+sudo apt-get install docker.io
+```
+
+3. Check if Docker is running:
+
+```bash
+sudo systemctl status docker
+```
+
+4. If it is not running, start it:
+
+```bash
+sudo systemctl start docker
+```
+
+Now that Docker is installed, we can start working on the project, but first, let's contextualize a bit.
 
 </p>
 
