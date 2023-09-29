@@ -15,11 +15,15 @@
 <h3 align="center"><b>
 	<a href="#Docker">What is Docker?</a>
 	<span> • </span>
-	<a href="#Virtual">Virtual Machines VS. Containers</a>
+	<a href="#Virtual">Virtual Machines and Containers</a>
 	<span> • </span>
-	<a href="#Images">Alpine Linux or Debian?</a>
+	<a href="#Images">Choosing our image: Alpine Linux or Debian?</a>
 	<span> • </span>
 	<a href="#PreReq">Pre-Requisites</a>
+	<span> • </span>
+	<a href="#DockerCompose">Docker Compose</a>
+	<span> • </span>
+	<a href="#Requirements">Requirements</a>
 	<span> • </span>
 </b></h3>
 
@@ -46,7 +50,7 @@ Docker gives you and your peers the stability necessary to run the exact same co
 ---
 
 <h2 id="Virtual">
-Virtual Machines VS. Containers
+Virtual Machines and Containers
 </h2>
 
 As you may have realized, Docker and Virtual Machines are pretty similar in their purpose, but they are not the same thing. To make things easier, let's discuss their main differences and purposes, as well as each of their pros and cons.
@@ -74,7 +78,7 @@ They choice between VMs and Containers depends on your specific requirements and
 ---
 
 <h2 id="Images">
-Choosing our images: Alpine Linux or Debian?
+Choosing our image: Alpine Linux or Debian?
 </h2>
 
 For this project, we will need to choose two images: one for our Virtual Machine (that will be our Docker host OS) and one for our Docker containers. The host OS image will be used to run our Virtual Machine, and the Docker image will be used to run our containers.
@@ -123,7 +127,7 @@ Considering all of this, I chose to use **Debian** for my project, for two main 
 Pre-Requisites
 </h2>
 
-Now, let's get to the fun part. Before we can start working on the project, though, we need to set up our environment, and that said environment consists of a Virtual Machine and Docker installed on it.
+Now, let's prepare to the fun part. Before we can start working on the project, though, we need to set up our environment, and that said environment consists of a Virtual Machine and Docker installed on it.
 
 For this, the initial setup consists of only two downloadables:
 
@@ -161,3 +165,179 @@ sudo systemctl start docker
 System should be up and running. Now, let's get to the project itself. Brace yourselves, 'cause this is a long one.
 
 ---
+
+<h2 id="DockerCompose">
+Docker Compose
+</h2>
+
+![Docker Compose](screenshots/docker-compose.jpg)
+
+Let's imagine the following scenario: you need to deploy an application. This application is composed of several services, such as a web server, a database, a cache, and so on (Hipotetically, of course, not at all like your project should be).
+
+To set up this application, you need to install and configure each service individually, making sure that each one is properly configured and that they are all connected to each other. This can be a very time-consuming and error-prone process, especially if you need to deploy the application multiple times, for example, in different environments.
+
+This is where **Docker Compose** comes in. Docker Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a simple file to describe how your application should be built and run, and then you can run a single command to create and start all the services from your configuration. Amazing right?
+
+Remember that: Docker Compose is your friend.
+
+The core concept of understanding System Administration is that you need to be able to **automate** everything. This is called **Infrastructure as Code**. You need to be able to write a script that will do everything for you, so that you can just run it and have everything set up and running. Docker Compose is a tool that will help you do just that.
+
+So now, let's understand how Docker Compose works.
+
+### YAML
+
+Docker Compose uses a YAML file. But what is YAML?
+
+**YAML** is a human-readable data serialization language. In summary, it is a way to represent data structures in a way that is easy to read and write for humans. It is commonly used for configuration files, but could be used in many applications where data is being stored or transmitted.
+
+YAML is a superset of JSON, which means that any valid JSON file is also a valid YAML file. However, YAML uses indentation instead of brackets to define data structures, which makes it simpler and easier to read.
+
+Example of YAML syntax:
+
+```yaml
+# This is a comment
+
+key: value # This is a key-value pair
+
+list: # This is a list
+  - item1
+  - item2
+  - item3
+
+dictionary: # This is a dictionary
+  key1: value1
+  key2: value2
+  key3: value3
+
+list_of_dicts: # This is a list of dictionaries
+  - key1: value1
+	key2: value2
+	key3: value3
+  - key1: value1
+	key2: value2
+	key3: value3
+  - key1: value1
+	key2: value2
+	key3: value3
+```
+
+YAML is a very simple and easy to learn language. You can find more information about YAML [here](https://yaml.org/).
+
+### Docker Compose File
+
+Docker Compose uses a YAML file called **docker-compose.yml** to define the services that make up your application. You can then use the **docker-compose** command to create and start all the services from your configuration.
+
+The docker-compose.yml file is divided into **services**. Each service is a container that will run a specific application. For example, you can have a service that runs a web server, another service that runs a database, and so on.
+
+Each service has a set of properties that define how it should be built and run. These properties include the name of the image to use, the ports to expose, the volumes to mount, etc.
+
+Docker Compose file example:
+
+```yaml
+version: "3.9" # Version of the docker-compose file
+
+services: # List of services
+  service1: # Service 1
+	image: image1 # Image to use
+	ports: # Ports to expose
+	  - "80:80"
+	  - "443:443"
+	volumes: # Volumes to mount
+	  - volume1
+	  - volume2
+	networks: # Networks to connect to
+	  - network1
+	  - network2
+  service2: # Service 2
+	image: image2 # Image to use
+	ports: # Ports to expose
+	  - "80:80"
+	  - "443:443"
+	volumes: # Volumes to mount
+	  - volume1
+	  - volume2
+	networks: # Networks to connect to
+	  - network1
+	  - network2
+  service3: # Service 3
+	image: image3 # Image to use
+	ports: # Ports to expose
+	  - "80:80"
+	  - "443:443"
+	volumes: # Volumes to mount
+	  - volume1
+	  - volume2
+	networks: # Networks to connect to
+	  - network1
+	  - network2
+  service4: # Service 4
+	image: image4 # Image to use
+	ports: # Ports to expose
+	  - "80:80"
+	  - "443:443"
+	volumes: # Volumes to mount
+	  - volume1
+	  - volume2
+	networks: # Networks to connect to
+	  - network1
+	  - network2
+```
+
+To get a full list of all the properties that can be used in a docker-compose.yml file, you can check the [official documentation](https://docs.docker.com/compose/compose-file/).
+
+### Repository Structure
+
+Your `docker-compose.yml` file should be in the root of your repository. Each service should be in its own sub-folder, and each sub-folder should have its own `Dockerfile` (To be explained below).
+
+To run your docker-compose.yml file, you can use the following command:
+
+```bash
+docker-compose up
+```
+However, we will be using a Makefile to run our docker-compose.yml file, as it will make our lives much easier. More on that later on.
+
+The tree structure of your application configuration will look something like this:
+
+```bash
+.
+├── Makefile
+├── docker-compose.yml
+├── service1
+│   └── Dockerfile
+├── service2
+│   └── Dockerfile
+├── service3
+│   └── Dockerfile
+└── service4
+	└── Dockerfile
+```
+
+### Dockerfile
+
+A **Dockerfile** is a text document that contains all the commands a user could call on the command line to assemble an image. Using `docker build` users can create an automated build that executes several command-line instructions in succession.
+
+Dockerfiles adhere to a specific format and use a specific set of instructions. You can find more information about Dockerfiles [here](https://docs.docker.com/engine/reference/builder/).
+
+Dockerfiles are used to build Docker images. Each service in your docker-compose.yml file will use a Dockerfile to build its image.
+
+Dockerfile example:
+
+```dockerfile
+FROM debian:buster # Base image to use
+
+RUN apt-get update && apt-get install -y package1 package2 package3 # Install packages
+
+COPY srcs/ / # Copy files from host to container
+
+RUN chmod 777 / # Change permissions
+
+CMD ["executable", "param1", "param2"] # Run command
+```
+
+To each service in this project, we will be using a Dockerfile to build its image. We're gonna go through each one of them, but first, let's understand the project's requirements.
+
+---
+
+<h2 id="Requirements">
+Requirements
+</h2>
