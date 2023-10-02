@@ -23,7 +23,9 @@
 	<span> • </span>
 	<a href="#DockerCompose">Docker Compose</a>
 	<span> • </span>
-	<a href="#Requirements">Requirements</a>
+	<a href="#MariaDB">MariaDB</a>
+	<span> • </span>
+	<a href="#NGINX">NGINX</a>
 	<span> • </span>
 </b></h3>
 
@@ -323,7 +325,7 @@ Dockerfiles are used to build Docker images. Each service in your docker-compose
 Dockerfile example:
 
 ```dockerfile
-FROM debian:buster # Base image to use
+FROM debian:bullseye # Base image
 
 RUN apt-get update && apt-get install -y package1 package2 package3 # Install packages
 
@@ -334,10 +336,181 @@ RUN chmod 777 / # Change permissions
 CMD ["executable", "param1", "param2"] # Run command
 ```
 
-To each service in this project, we will be using a Dockerfile to build its image. We're gonna go through each one of them, but first, let's understand the project's requirements.
+To each service in this project, we will be using a Dockerfile to build its image.
+
+> As per the project's requirements, we need to use the penultimate stable version of Debian, which is called **Bullseye**. To check all the Debian releases, you can check [here](https://wiki.debian.org/DebianReleases). For reference on how to use Debian in Docker, you can check [here](https://hub.docker.com/_/debian).
+
 
 ---
 
-<h2 id="Requirements">
-Requirements
+<h2 id="MariaDB">
+MariaDB
 </h2>
+
+![MariaDB](screenshots/mariadb.png)
+
+
+**MariaDB** is a community-developed, commercially supported fork of the MySQL relational database management system (RDBMS), intended to remain free and open-source software under the GNU General Public License. Development is led by some of the original developers of MySQL, who forked it due to concerns over its acquisition by Oracle Corporation in 2009.
+
+MariaDB intends to maintain high compatibility with MySQL, ensuring a "drop-in" replacement capability with library binary equivalency and exact matching with MySQL APIs and commands. It includes the XtraDB storage engine for replacing InnoDB, as well as a new storage engine, Aria, that intends to be both a transactional and non-transactional engine perhaps even included in future versions of MySQL.
+
+MariaDB offers more storage engines than MySQL, including Cassandra (NoSQL), XtraDB (drop-in replacement for InnoDB), and OQGRAPH (used for shortest path analysis). It is also more open and community-driven, with the main development being done by the company MariaDB Corporation, but also with the help of the community. MariaDB is also more secure, with more security features than MySQL, such as encryption, authentication, and auditing.
+
+### 1. Install MariaDB:
+
+```bash
+sudo apt-get install mariadb-server -y
+```
+
+### 2. Configure MariaDB:
+
+```bash
+sudo mysql_secure_installation
+```
+
+### 3. Create a database:
+
+```bash
+sudo mysql -u root -p
+```
+
+```sql
+CREATE DATABASE database_name;
+```
+
+
+---
+
+<h2 id="NGINX">
+NGINX
+</h2>
+
+![NGINX](screenshots/nginx.png)
+
+Inception demands us set up a NGINX server, using TLSv1.2 or TLSv1.3. 
+
+**NGINX** is a web server that can also be used as a reverse proxy, load balancer, mail proxy and HTTP cache. It is free and open-source, and it is used by over 400 million websites. It is known for its high performance, stability, rich feature set, simple configuration, and low resource consumption.
+
+**TLS**, on the other hand, is a cryptographic protocol designed to provide communications security over a computer network. TLS is the successor to the Secure Sockets Layer (SSL) protocol. TLS works by encrypting data between two communicating parties, such as a client and a server. This ensures that the data cannot be read or modified by anyone who is not authorized to access it. TLS also provides authentication, which means that the client can be sure that it is communicating with the correct server, and that the server can be sure that it is communicating with the correct client.
+
+
+> #### What's the difference between a key and a certificate? 
+> A **key** is a piece of information that controls the cryptographic operation. A **certificate** is a digitally signed statement that binds the value of a public key to the identity of the person, device, or service that holds the corresponding private key.
+>
+> #### What's the difference between TLS and SSL?
+> TLS and SSL are cryptographic protocols that provide secure communications over a computer network. TLS is the successor to SSL, and it is more secure and more widely used than SSL. However, the term SSL is still commonly used to refer to TLS.
+
+Now, let's learn how to set a Docker container with NGINX and TLS. But before I show you how to compose a Dockerfile for NGINX, let's understand the step by step of what needs to be done in order to install NGINX and configure it to use TLS.
+
+### 1. Install NGINX and OpenSSL:
+
+```bash
+sudo apt-get install nginx openssl -y
+```
+
+### 2. Generate a self-signed certificate:
+
+```bash
+sudo openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/C=BR/ST=Sao Paulo/L=Sao Paulo/O=42SP/OU=Inception/CN=localhost"
+```
+> #### Understanding each one of the flags:
+> - `**req**`: We are using the `req` command to generate a certificate request. This is the default subcommand when none is specified.
+> - `**x509**`: This option outputs a self signed certificate instead of a certificate request. This is typically used to generate a test certificate or a self signed root CA.
+> - `**sha256**`: This option is used to specify the message digest to sign the request with. It's basically a hash function useful for generating an unique identifier for a file, so that we can use it to verify that the certificate is valid. It's also called a **fingerprint**.
+> - `**nodes**`: If this option is specified then if a private key is created it will not be encrypted. It's importamt to use it when we are generating a self-signed certificate as part of an automated process, as we will be doing.
+> - `**days**`: When the -x509 option is being used this specifies the number of days to certify the certificate for. The default is 30 days, but we'll be using `365` as recommended.
+> - `**newkey**`: This option creates a new certificate request and a new private key. The argument takes one of several forms. Here, we'll be using `rsa:nbits`, where nbits is, in our case, `2048` bits.
+> - `**keyout**`: This gives the filename to write the newly created private key to. In our case, we'll be using `/etc/ssl/private/nginx-selfsigned.key`.
+> - `**out**`: This specifies the output filename to write to or standard output by default. In our case, we'll be using `/etc/ssl/certs/nginx-selfsigned.crt`.
+> - `**subj**`: This option sets the subject name to use. The arg must be formatted as /type0=value0/type1=value1/type2=..., characters may be escaped by \ (backslash), no spaces are skipped. The actual value supplied must be appropriate for the certificate being generated. In our case, we'll be using `/C=BR/ST=Sao Paulo/L=Sao Paulo/O=42SP/OU=Inception/CN=localhost`.
+
+Take note on the name of both the key and the certificate, as we will be using them later on to configure our NGINX server.
+
+- **key**: `/etc/ssl/private/nginx-selfsigned.key`
+- **certificate**: `/etc/ssl/certs/nginx-selfsigned.crt`
+
+### 3. Configure NGINX: 
+
+This is the core step for this module. But first, we need to understand that NGINX is text-based configured. This means that all of its configuration is done via text files, located in specific directories avaliable after NGINX installation.
+
+The main NGINX repository is located in `/etc/nginx/`. Inside this directory, we have several sub-directories, each one with a specific purpose. There's a default configuration file in `/etc/nginx/nginx.conf`, but it is not recommended for us to edit it directly. Instead, we will be creating our own configuration file in `/etc/nginx/conf.d/` directory. 
+
+NGINX has many available features, like caching, load balancing, and so on. We must think of creating a single configuration file for each feature we want to use. The convention of naming these files is to use the `.conf` extension, so that NGINX can recognize them as configuration files. For example: 
+
+- a configuration file for caching would be named `caching.conf`;
+- a configuration file for load balancing would be named `load_balancing.conf`;
+- a configuration file for a web server would be named `https.conf` - This is the one we will be using.
+
+As per the specification, we will be configuring NGINX's web server to listen to port `80` and `443`, and to redirect all traffic from port `80` to port `443`. We will also be configuring it to use TLSv1.2 or TLSv1.3, as required by the project.
+
+To do so, create `https.conf` in your project repository, and set it up accordingly. To use variables, you can check the [official documentation](http://nginx.org/en/docs/varindex.html).
+
+```conf
+server {
+	# Listen to ports 80 and 443
+	listen 80;
+	listen 443 ssl;
+	# Force https redirection
+	if ($scheme = http) {
+		return 301 https://$host$request_uri;
+	}
+
+	# Set server name
+	server_name localhost;
+
+	# Set certificate and key
+	ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+	ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+	ssl_protocols TLSv1.2 TLSv1.3;
+
+
+	# -------------------------------------------------------#
+	# -------------------- WORDPRESS ------------------------#
+	# -------------------------------------------------------#
+
+	# Set root directory
+	root /var/www/html;
+
+	# Set index file
+	index index.php;
+
+	# Forward PHP calls to FastCGI server
+	location ~ \.php$ {
+		include snippets/fastcgi-php.conf;
+		fastcgi_pass wordpress:9000;
+	}
+}
+```
+
+After setting up the configuration file, we need to copy it to the NGINX repository, so that NGINX can use it.
+
+### 4. NGINX Dockerfile
+
+
+```dockerfile
+# Base image
+FROM debian:bullseye 
+
+# Update and upgrade system
+RUN apt-get update && apt-get upgrade -y
+
+# Install NGINX and OpenSSL
+RUN apt-get update && apt-get install nginx openssl -y
+
+# Generate self-signed certificate
+RUN openssl req -x509 -sha256 -nodes \
+	-days 365 \
+	-newkey rsa:2048 \
+	-keyout /etc/ssl/private/nginx-selfsigned.key \
+	-out /etc/ssl/certs/nginx-selfsigned.crt \
+	-subj "/C=BR/ST=Sao Paulo/L=Sao Paulo/O=42SP/OU=Inception/CN=localhost"
+
+# Copy configuration file
+COPY srcs/https.conf /etc/nginx/conf.d/
+
+# Expose ports
+EXPOSE 80 443
+
+# Run NGINX
+CMD ["nginx", "-g", "daemon off;"]
+```
