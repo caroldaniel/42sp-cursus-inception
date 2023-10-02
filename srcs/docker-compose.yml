@@ -1,0 +1,63 @@
+version: "3.7"
+
+# Services (Containers)
+services:
+  mariadb:
+    container_name: mariadb
+    init: true
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+      args:
+        - WP_DATABASE
+        - WP_USER
+        - WP_PASSWORD
+    networks:
+      - inception
+    volumes:
+      - mariadb:/var/lib/mysql
+
+  wordpress:
+    container_name: wordpress
+    init: true
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+      args:
+        - WP_DATABASE
+        - WP_USER
+        - WP_PASSWORD
+    networks:
+      - inception
+    volumes:
+      - wordpress:/var/www/html
+    depends_on:
+      - mariadb
+
+  nginx:
+    container_name: nginx
+    init: true
+    build:
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
+    networks:
+      - inception
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - wordpress:/var/www/html
+    depends_on:
+      - wordpress
+
+# Volumes
+volumes:
+  mariadb:
+    external: true
+  wordpress:
+    external: true
+
+# Networks
+networks:
+  inception:
+    name: inception
