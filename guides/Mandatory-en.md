@@ -340,7 +340,6 @@ To each service in this project, we will be using a Dockerfile to build its imag
 
 > As per the project's requirements, we need to use the penultimate stable version of Debian, which is called **Bullseye**. To check all the Debian releases, you can check [here](https://wiki.debian.org/DebianReleases). For reference on how to use Debian in Docker, you can check [here](https://hub.docker.com/_/debian).
 
-
 ---
 
 <h2 id="MariaDB">
@@ -377,7 +376,6 @@ sudo mysql -u root -p
 ```sql
 CREATE DATABASE database_name;
 ```
-
 
 ---
 
