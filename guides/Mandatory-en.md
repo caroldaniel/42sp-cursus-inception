@@ -138,18 +138,20 @@ For this, the initial setup consists of only two downloadables:
 
 I will not be covering the installation of these two, as they are pretty straightforward. If you have any issues, you can find plenty of tutorials online.
 
-Once you have your Virtual Machine up and running with your Debian OS, you will need to install Docker. To do so, you can follow the steps below:
+If you're from 42 São Paulo (as I am), you may be more inclined to use the official 42user VM, available at the [Guia de Sobrevivência](https://42sp.notion.site/Guia-de-Sobreviv-ncia-Cadetes-eac127ab72c84acea6f229ca813adfc1) webpage. Either way, make sure to have a full functioning Linux Machine at the end of this step. 
+
+Once you have your Virtual Machine up and running with an OS of your choice, you will need to install Docker. To do so, you can follow the steps below:
 
 1. Update and upgrade your system:
 
 ```bash
-sudo apt-get update && sudo apt-get upgrade
+sudo apt update && sudo apt upgrade
 ```
 
 2. Install Docker:
 
 ```bash
-sudo apt-get install docker.io
+sudo apt install docker.io
 ```
 
 3. Check if Docker is running:

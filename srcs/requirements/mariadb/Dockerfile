@@ -7,10 +7,10 @@ ARG WP_USER
 ARG WP_PASSWORD
 
 # Update and upgrade system
-RUN apt-get update && apt-get upgrade -y
+RUN apt -y update && apt -y upgrade
 
 # Install MariaDB
-RUN apt-get install mariadb-server -y
+RUN apt -y install mariadb-server
 
 # Modify server configuration file so that:
 # - MariaDB can connect to the Docker network
