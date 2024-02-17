@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.8"
 
 # Services (Containers)
 services:
@@ -16,6 +16,7 @@ services:
       - inception
     volumes:
       - mariadb:/var/lib/mysql
+    restart: always
 
   wordpress:
     container_name: wordpress
@@ -31,6 +32,7 @@ services:
       - inception
     volumes:
       - wordpress:/var/www/html
+    restart: always
     depends_on:
       - mariadb
 
@@ -43,21 +45,25 @@ services:
     networks:
       - inception
     ports:
-      - "80:80"
       - "443:443"
     volumes:
       - wordpress:/var/www/html
+    restart: always
     depends_on:
+      - mariadb
       - wordpress
 
 # Volumes
 volumes:
   mariadb:
+    name: mariadb
     external: true
   wordpress:
+    name: wordpress
     external: true
 
 # Networks
 networks:
   inception:
     name: inception
+    driver: bridge

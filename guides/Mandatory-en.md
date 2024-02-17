@@ -166,7 +166,7 @@ sudo systemctl status docker
 sudo systemctl start docker
 ```
 
-System should be up and running. Now, let's get to the project itself. Brace yourselves, 'cause this is a long one.
+System should be up and running.
 
 ---
 
@@ -184,7 +184,42 @@ This is where **Docker Compose** comes in. Docker Compose is a tool for defining
 
 Remember that: Docker Compose is your friend.
 
-The core concept of understanding System Administration is that you need to be able to **automate** everything. This is called **Infrastructure as Code**. You need to be able to write a script that will do everything for you, so that you can just run it and have everything set up and running. Docker Compose is a tool that will help you do just that.
+In order to be able to use docker compose, you need to make sure it's also installed in your system. To do so, you can follow the steps below:
+
+1. Install Docker Compose:
+
+```bash
+sudo apt install docker-compose
+```
+
+Docker compose has 2 versions available: V1 and V2. As of May 10, 2021, V1 has not received any more updates, and therefore is considered deprecated. For this project, we will be using V2 as default. 
+
+Compose V2 is called through command line without the hyphen, like this:
+
+```bash
+docker compose version
+```
+
+If the code below does not work, you will need to manually install V2 on your VM. To do so, you can follow the steps below:
+
+1. Download the latest version of Docker Compose:
+
+```bash
+#Installing Docker Compose V2
+DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+mkdir -p $DOCKER_CONFIG/cli-plugins
+curl -SL https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
+
+#Make it executable
+chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+
+#Check if it works!
+docker compose version
+```
+
+To understand the differences between V1 and V2, you can check the [official documentation](https://docs.docker.com/compose/migrate/).
+
+And to properly understand what System Administration is, you need to be able also understand the importance of **automating** everything. This is called **Infrastructure as Code**. You need to be able to write a script that will do everything for you, so that you can just run it and have everything set up and running. Docker Compose is a tool that will help you do just that.
 
 So now, let's understand how Docker Compose works.
 
@@ -291,7 +326,7 @@ To get a full list of all the properties that can be used in a docker-compose.ym
 
 ### Repository Structure
 
-Your `docker-compose.yml` file should be in the root of your repository. Each service should be in its own sub-folder, and each sub-folder should have its own `Dockerfile` (To be explained below).
+Your `docker-compose.yml` file should be in the srcs/ folder, located in the root of your repository. Each service should be in its own sub-folder, and each sub-folder should have its own `Dockerfile` (To be explained below).
 
 To run your docker-compose.yml file, you can use the following command:
 
@@ -305,15 +340,16 @@ The tree structure of your application configuration will look something like th
 ```bash
 .
 ├── Makefile
-├── docker-compose.yml
-├── service1
-│   └── Dockerfile
-├── service2
-│   └── Dockerfile
-├── service3
-│   └── Dockerfile
-└── service4
-	└── Dockerfile
+└── srcs/
+	├── .env
+    ├── docker-compose.yml
+    └── requirements/
+        ├── service1/
+        │   └── Dockerfile
+        ├── service2/
+        │   └── Dockerfile
+        └── service3/
+            └── Dockerfile
 ```
 
 ### Dockerfile
@@ -360,16 +396,40 @@ MariaDB offers more storage engines than MySQL, including Cassandra (NoSQL), Xtr
 ### 1. Install MariaDB:
 
 ```bash
-sudo apt-get install mariadb-server -y
+sudo apt-get -y install mariadb-server
 ```
 
 ### 2. Configure MariaDB:
+
+Now, there are a few ways to do this. If you're installing and configuring MariaDB manually via command line, you can use the following command:
 
 ```bash
 sudo mysql_secure_installation
 ```
 
-### 3. Create a database:
+And after, simply follow the instructions on the screen. You will be asked to set a root password, remove anonymous users, disallow root login remotely, remove test database and access to it, and reload privilege tables.
+
+However, since we are using Docker, we will be using a script to automate this process. One of the ways to make sure MariaDB is properly configured is to edit the /etc/mysql/my.cnf file. This file is the main configuration file for MariaDB, and it contains all the settings that control the behavior of the MariaDB server.
+
+Now, to properly configure MariaDB, you will need to make sure that your /etc/mysql/my.cnf file has the following settings:
+
+```bash
+[mysqld]
+# Allow connections from any IP address
+bind-address = 0.0.0.0
+
+# Enable TCP/IP networking
+skip-networking = 0
+
+# Port for TCP/IP connections
+port = 3306
+
+# Disable Unix socket communication
+# Comment out the following line or remove it
+# socket = /var/run/mysqld/mysqld.sock
+```
+
+ALso, you will need to initialize the database and create a user. To do so, you can use the following commands:
 
 ```bash
 sudo mysql -u root -p
@@ -377,7 +437,18 @@ sudo mysql -u root -p
 
 ```sql
 CREATE DATABASE database_name;
+CREATE USER 'username'@'%' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON *.* TO 'username@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
 ```
+
+Replace `database_name`, `username`, and `password` with the name of your database, the username you want to use, and the password you want to use, respectively.
+
+
+### 3. MariaDB dump.sql
+
+When you finally get set up your Wordpress website, you will be able to import all of your sites configurations, settings, and data into your MariaDB database. This is done by importing a .sql file into your database (it will be explained in the Wordpress section). For now, you need to know that, when creating your Dockerfile for MariaDB, you will need to copy this .sql file into your container, so that it can be used to initialize your database.
+
 
 ---
 

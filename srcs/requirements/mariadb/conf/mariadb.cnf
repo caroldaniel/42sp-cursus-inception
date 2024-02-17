@@ -1,0 +1,13 @@
+[mysqld]
+# Allow connections from any IP address
+bind-address = 0.0.0.0
+
+# Enable TCP/IP networking
+skip-networking = 0
+
+# Port for TCP/IP connections
+port = 3306
+
+# Disable Unix socket communication
+# Comment out the following line or remove it
+# socket = /var/run/mysqld/mysqld.sock
