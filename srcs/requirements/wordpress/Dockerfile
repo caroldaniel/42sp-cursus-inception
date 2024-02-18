@@ -28,7 +28,11 @@ COPY        ./tools/init.sh /usr/local/bin/
 RUN         bash /usr/local/bin/init.sh
 
 # Copy Wordpress customized content
+RUN         mkdir -p /var/www/html/wordpress/wp-content/uploads/2024/02/
 COPY        ./conf/uploads/ /var/www/html/wordpress/wp-content/
+RUN         chmod -R 644 /var/www/html/wordpress/wp-content/uploads/*
+RUN         chmod 755 /var/www/html/wordpress/wp-content/uploads/
+RUN         chown -R www-data:www-data /var/www/html/wordpress/wp-content/uploads/
 
 # Run php-fpm
 ENTRYPOINT  [ "php-fpm", "-F" ]
