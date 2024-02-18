@@ -219,7 +219,7 @@ docker compose version
 
 To understand the differences between V1 and V2, you can check the [official documentation](https://docs.docker.com/compose/migrate/).
 
-And to properly understand what System Administration is, you need to be able also understand the importance of **automating** everything. This is called **Infrastructure as Code**. You need to be able to write a script that will do everything for you, so that you can just run it and have everything set up and running. Docker Compose is a tool that will help you do just that.
+And to properly understand what System Administration is, you also need to be able understand the importance of **automating** everything. This is called **Infrastructure as Code**. You need to be able to write a script that will do everything for you, so that you can just run it and have everything set up and running. Docker Compose is a tool that will help you do just that.
 
 So now, let's understand how Docker Compose works.
 
@@ -407,11 +407,11 @@ Now, there are a few ways to do this. If you're installing and configuring Maria
 sudo mysql_secure_installation
 ```
 
-And after, simply follow the instructions on the screen. You will be asked to set a root password, remove anonymous users, disallow root login remotely, remove test database and access to it, and reload privilege tables.
+However, we're not manually inputing any command into the terminal here. Since our goal is to **automate** the process of setting up your infrastructure, you will need to find ways to use the configuration files found in your system in your favor. 
 
-However, since we are using Docker, we will be using a script to automate this process. One of the ways to make sure MariaDB is properly configured is to edit the /etc/mysql/my.cnf file. This file is the main configuration file for MariaDB, and it contains all the settings that control the behavior of the MariaDB server.
+One way to do this is through the `/etc/mysql/my.cnf` file. This is the main configuration file for MariaDB, and it contains all the settings that control the behavior of the MariaDB server. ALso, it imports any file inside the directories `conf.d` and `mariadb.conf.d`, so you can easily organize your configurations, based on services, as well as you please.
 
-Now, to properly configure MariaDB, you will need to make sure that your /etc/mysql/my.cnf file has the following settings:
+Now, to properly configure MariaDB, you will need to make sure that your configuration file has, at least, the following settings:
 
 ```bash
 [mysqld]
@@ -423,32 +423,89 @@ skip-networking = 0
 
 # Port for TCP/IP connections
 port = 3306
-
-# Disable Unix socket communication
-# Comment out the following line or remove it
-# socket = /var/run/mysqld/mysqld.sock
 ```
+Socket communication will also need to be disabled, in case it isn't already.
 
-ALso, you will need to initialize the database and create a user. To do so, you can use the following commands:
+Now, let's go for the creating of the Wordpress Database itself. This is the database that will be responsible for keep all your wordpress website information, as well as users info, themes, layout, posts, comments, etc. It needs to exist in your mariadb container and be ready to receive all the data that wordpress you generate.
+
+First, you need to get into your mariadb service as root user. 
 
 ```bash
-sudo mysql -u root -p
+mariadb -u root -p
 ```
 
+Then, you need to pass the following SQL commands, in order to create the database, the MySQL user, their password and allow them to connect to your DB through the network. 
+
 ```sql
-CREATE DATABASE database_name;
-CREATE USER 'username'@'%' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON *.* TO 'username@'%' WITH GRANT OPTION;
+CREATE DATABASE IF NOT EXISTS '<Wordpress Database>';
+CREATE USER IF NOT EXISTS '<MySQL user>'@'%' IDENTIFIED BY '<MySQL Password>';
+GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '<MySQL user>'@'%';
 FLUSH PRIVILEGES;
 ```
 
-Replace `database_name`, `username`, and `password` with the name of your database, the username you want to use, and the password you want to use, respectively.
-
+Replace `Wordpress Database`, `MySQL user`, and `MySQL Password` with the name of your database, the username you want to create, and the password you want to use, respectively.
 
 ### 3. MariaDB dump.sql
 
-When you finally get set up your Wordpress website, you will be able to import all of your sites configurations, settings, and data into your MariaDB database. This is done by importing a .sql file into your database (it will be explained in the Wordpress section). For now, you need to know that, when creating your Dockerfile for MariaDB, you will need to copy this .sql file into your container, so that it can be used to initialize your database.
+When you finally get your Wordpress website all set up, you will be able to import all of your site's settings and data into your MariaDB database. This is done by importing a `.sql` file into your database (it will be explained in the Wordpress section). 
 
+It's important to notice you will only be able to generate the dump once you've finished setting up your Wordpress container. So if you haven't yet, come back here when you do. 
+
+During the MariaDB installation, most often then not there is another service installed with it: `mysqldump`. This is the service you will use to generate the dump file. 
+
+After the containers are up and running, and your wordpress have been successfully configured, you can use the following command to access your mariadb container:
+
+```bash
+docker exec -it mariadb /bin/bash
+```
+
+It will open a direct connection to your mariadb container's shell environment, and then you can use your `mysqldump` service to generate the file you need:
+
+```bash
+mysqldump -u $USERNAME -p $DATABASE > dump.sql
+```
+
+You will be prompted to type in your mariadb server user (it can also be root).
+
+The `dump.sql` file will need to be copied back to your computer and inception folder. To do that, you can use the external volume in which you have access: `/var/lib/mysql`.
+
+
+### 4. MariaDB Dockerfile
+
+```dockerfile
+# Base image
+FROM        debian:bullseye
+
+# Define build arguments passed from docker-compose.yml
+ARG         MYSQL_DATABASE
+ARG         MYSQL_USER
+ARG         MYSQL_PASSWORD
+ARG         MYSQL_ROOT_PASSWORD
+
+# Update and upgrade system & install MariaDB
+RUN         apt -y update && apt -y upgrade
+RUN         apt -y install mariadb-server mariadb-client
+
+#allow mysqld daemon to run, purge and recreate /var/lib/mysql with appropriate ownership
+RUN			mkdir -p /var/lib/mysql /var/run/mysqld
+RUN			chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
+RUN			chmod 777 /var/run/mysqld
+
+# Copy the MariaDB configuration file and dump.sql file
+COPY        ./conf/mariadb.cnf /etc/mysql/mariadb.conf.d/
+RUN         chmod 644 /etc/mysql/mariadb.conf.d/mariadb.cnf
+COPY        ./conf/dump.sql /usr/local/bin/
+
+# Execute MariaDB Initialization script
+COPY        ./tools/init.sh /usr/local/bin/
+RUN         bash /usr/local/bin/init.sh
+
+# Expose port to the host
+EXPOSE      3306
+
+# Run MariaDB
+ENTRYPOINT  [ "mysqld_safe" ]
+```
 
 ---
 
@@ -471,7 +528,7 @@ Inception demands us set up a NGINX server, using TLSv1.2 or TLSv1.3.
 > #### What's the difference between TLS and SSL?
 > TLS and SSL are cryptographic protocols that provide secure communications over a computer network. TLS is the successor to SSL, and it is more secure and more widely used than SSL. However, the term SSL is still commonly used to refer to TLS.
 
-Now, let's learn how to set a Docker container with NGINX and TLS. But before I show you how to compose a Dockerfile for NGINX, let's understand the step by step of what needs to be done in order to install NGINX and configure it to use TLS.
+Now, let's learn how to set up NGINX and TLS. 
 
 ### 1. Install NGINX and OpenSSL:
 
@@ -482,7 +539,7 @@ sudo apt-get install nginx openssl -y
 ### 2. Generate a self-signed certificate:
 
 ```bash
-sudo openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/C=BR/ST=Sao Paulo/L=Sao Paulo/O=42SP/OU=Inception/CN=localhost"
+sudo openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:4096 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/C=BR/ST=Sao Paulo/L=Sao Paulo/O=42SP/OU=Inception/CN=localhost"
 ```
 > #### Understanding each one of the flags:
 > - `**req**`: We are using the `req` command to generate a certificate request. This is the default subcommand when none is specified.
@@ -490,7 +547,7 @@ sudo openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ss
 > - `**sha256**`: This option is used to specify the message digest to sign the request with. It's basically a hash function useful for generating an unique identifier for a file, so that we can use it to verify that the certificate is valid. It's also called a **fingerprint**.
 > - `**nodes**`: If this option is specified then if a private key is created it will not be encrypted. It's importamt to use it when we are generating a self-signed certificate as part of an automated process, as we will be doing.
 > - `**days**`: When the -x509 option is being used this specifies the number of days to certify the certificate for. The default is 30 days, but we'll be using `365` as recommended.
-> - `**newkey**`: This option creates a new certificate request and a new private key. The argument takes one of several forms. Here, we'll be using `rsa:nbits`, where nbits is, in our case, `2048` bits.
+> - `**newkey**`: This option creates a new certificate request and a new private key. The argument takes one of several forms. Here, we'll be using `rsa:nbits`, where nbits is, in our case, `4096` bits.
 > - `**keyout**`: This gives the filename to write the newly created private key to. In our case, we'll be using `/etc/ssl/private/nginx-selfsigned.key`.
 > - `**out**`: This specifies the output filename to write to or standard output by default. In our case, we'll be using `/etc/ssl/certs/nginx-selfsigned.crt`.
 > - `**subj**`: This option sets the subject name to use. The arg must be formatted as /type0=value0/type1=value1/type2=..., characters may be escaped by \ (backslash), no spaces are skipped. The actual value supplied must be appropriate for the certificate being generated. In our case, we'll be using `/C=BR/ST=Sao Paulo/L=Sao Paulo/O=42SP/OU=Inception/CN=localhost`.
@@ -512,35 +569,30 @@ NGINX has many available features, like caching, load balancing, and so on. We m
 - a configuration file for load balancing would be named `load_balancing.conf`;
 - a configuration file for a web server would be named `https.conf` - This is the one we will be using.
 
-As per the specification, we will be configuring NGINX's web server to listen to port `80` and `443`, and to redirect all traffic from port `80` to port `443`. We will also be configuring it to use TLSv1.2 or TLSv1.3, as required by the project.
+As per the specification, we will be configuring NGINX's web server to only listen to port `443`. We will also be configuring it to use TLSv1.2 or TLSv1.3, as required by the project.
 
 To do so, create `https.conf` in your project repository, and set it up accordingly. To use variables, you can check the [official documentation](http://nginx.org/en/docs/varindex.html).
 
 ```conf
 server {
 	# Listen to ports 80 and 443
-	listen 80;
 	listen 443 ssl;
-	# Force https redirection
-	if ($scheme = http) {
-		return 301 https://$host$request_uri;
-	}
+	listen [::]:443 ssl;
 
 	# Set server name
-	server_name localhost;
+	server_name INSERT_DOMAIN_NAME_HERE;
 
 	# Set certificate and key
-	ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
-	ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+	ssl_certificate_key INSERT_KEY_PATH_HERE;
+	ssl_certificate INSERT_CRT_PATH_HERE;
 	ssl_protocols TLSv1.2 TLSv1.3;
-
 
 	# -------------------------------------------------------#
 	# -------------------- WORDPRESS ------------------------#
 	# -------------------------------------------------------#
 
 	# Set root directory
-	root /var/www/html;
+	root /var/www/html/wordpress;
 
 	# Set index file
 	index index.php;
@@ -553,35 +605,41 @@ server {
 }
 ```
 
-After setting up the configuration file, we need to copy it to the NGINX repository, so that NGINX can use it.
-
 ### 4. NGINX Dockerfile
-
 
 ```dockerfile
 # Base image
-FROM debian:bullseye 
+FROM 		debian:bullseye
 
-# Update and upgrade system
-RUN apt-get update && apt-get upgrade -y
+# Define build arguments passed from docker-compose.yml
+ARG			DOMAIN_NAME
+ARG 		CERTS_KEY
+ARG			CERTS_CRT
 
-# Install NGINX and OpenSSL
-RUN apt-get update && apt-get install nginx openssl -y
+# Update and upgrade system & install Nginx and OpenSSL
+RUN 		apt -y update && apt -y upgrade
+RUN 		apt -y install nginx openssl 
 
 # Generate self-signed certificate
-RUN openssl req -x509 -sha256 -nodes \
-	-days 365 \
-	-newkey rsa:2048 \
-	-keyout /etc/ssl/private/nginx-selfsigned.key \
-	-out /etc/ssl/certs/nginx-selfsigned.crt \
-	-subj "/C=BR/ST=Sao Paulo/L=Sao Paulo/O=42SP/OU=Inception/CN=localhost"
+RUN 		openssl req -x509 -sha256 -nodes \
+			-newkey rsa:4096 \
+			-days 365 \
+			-subj "/C=BR/ST=Sao Paulo/L=Sao Paulo/O=42SP/OU=Inception/CN=cado-car.42.fr" \
+			-keyout ${CERTS_KEY} \
+			-out ${CERTS_CRT} 
+
+# Guarantee that Nginx is using TSLv1.3 
+RUN 		sed -i 's/ssl_protocols.*/ssl_protocols TLSv1.3;/' /etc/nginx/nginx.conf
 
 # Copy configuration file
-COPY srcs/https.conf /etc/nginx/conf.d/
+COPY 		./conf/https.conf /etc/nginx/conf.d/
+RUN			sed -i "s|INSERT_DOMAIN_NAME_HERE|${DOMAIN_NAME}|g" /etc/nginx/conf.d/https.conf
+RUN 		sed -i "s|INSERT_KEY_PATH_HERE|${CERTS_KEY}|g" /etc/nginx/conf.d/https.conf
+RUN 		sed -i "s|INSERT_CRT_PATH_HERE|${CERTS_CRT}|g" /etc/nginx/conf.d/https.conf
 
 # Expose ports
-EXPOSE 80 443
+EXPOSE 		443
 
 # Run NGINX
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT	[ "nginx", "-g", "daemon off;" ]
 ```
