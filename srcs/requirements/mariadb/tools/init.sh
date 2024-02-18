@@ -2,7 +2,7 @@
 
 service mariadb start
 
-# Create WordPress database
+# Create and import WordPress database
 mariadb -u root -e "CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;"
 mariadb -u root -e "CREATE USER IF NOT EXISTS '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';"
 mariadb -u root -e "GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%';"
@@ -16,13 +16,7 @@ mariadb -u root -e "FLUSH PRIVILEGES;"
 mariadb -u root -p $MYSQL_ROOT_PASSWORD "GRANT ALL ON *.* TO 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';"
 mariadb -u root -p $MYSQL_ROOT_PASSWORD "FLUSH PRIVILEGES;"
 
-# Check if dump file exists and import if available
-if [ -f /tmp/dump.sql ]; then
-    mysql -u root $MYSQL_DATABASE < /tmp/dump.sql
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to import dump.sql"
-        exit 1
-    fi
-fi
+# Import database dump
+mysql -uroot -p $MYSQL_ROOT_PASSWORD $MYSQL_DATABASE < /usr/local/bin/dump.sql
 
 service mariadb stop
