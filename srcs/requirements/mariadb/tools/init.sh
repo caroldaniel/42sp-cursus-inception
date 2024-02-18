@@ -2,27 +2,19 @@
 
 service mariadb start
 
-# Install MariaDB
-mysql_secure_installation << _EOF_
-
-Y
-1234root4321
-1234root4321
-Y
-n
-Y
-Y
-_EOF_
-
-# Grant root access to MariaDB
-mariadb -e "GRANT ALL ON *.* TO 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';"
-mariadb -e "FLUSH PRIVILEGES;"
-
 # Create WordPress database
-mariadb -e "CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;"
-mariadb -e "CREATE USER IF NOT EXISTS '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD';"
-mariadb -e "GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'localhost';"
-mariadb -e "FLUSH PRIVILEGES;"
+mariadb -u root -p "CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;"
+mariadb -u root -p "CREATE USER IF NOT EXISTS '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD';"
+mariadb -u root -p "GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'localhost';"
+mariadb -u root -p "FLUSH PRIVILEGES;"
+
+# Set password for root user
+mariadb -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$MYSQL_ROOT_PASSWORD');"
+mariadb -u root -p "FLUSH PRIVILEGES;"
+
+# Allow root user to login from any host
+mariadb -u root -p $MYSQL_ROOT_PASSWORD "GRANT ALL ON *.* TO 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';"
+mariadb -u root -p $MYSQL_ROOT_PASSWORD "FLUSH PRIVILEGES;"
 
 # Check if dump file exists and import if available
 if [ -f /tmp/dump.sql ]; then
