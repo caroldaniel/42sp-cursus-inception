@@ -9,9 +9,10 @@ services:
       context: ./requirements/mariadb
       dockerfile: Dockerfile
       args:
-        - WP_DATABASE
-        - WP_USER
-        - WP_PASSWORD
+        - MYSQL_DATABASE
+        - MYSQL_USER
+        - MYSQL_PASSWORD
+        - MYSQL_ROOT_PASSWORD
     networks:
       - inception
     volumes:
@@ -25,9 +26,9 @@ services:
       context: ./requirements/wordpress
       dockerfile: Dockerfile
       args:
-        - WP_DATABASE
-        - WP_USER
-        - WP_PASSWORD
+        - MYSQL_DATABASE
+        - MYSQL_USER
+        - MYSQL_PASSWORD
     networks:
       - inception
     volumes:
@@ -42,6 +43,10 @@ services:
     build:
       context: ./requirements/nginx
       dockerfile: Dockerfile
+      args:
+        - DOMAIN_NAME
+        - CERTS_KEY
+        - CERTS_CRT
     networks:
       - inception
     ports:
