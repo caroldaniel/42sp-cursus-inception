@@ -1,13 +1,7 @@
 [mysqld]
-
-# Allow connections from any IP address
-bind-address = 0.0.0.0
-
-# Enable TCP/IP networking
-skip-networking = 0
-
-# Port for TCP/IP connections
+user = root
 port = 3306
-
-# Data directory
 datadir = /var/lib/mysql
+socket = /var/run/mysqld/mysqld.sock
+skip-networking = false
+bind-address = 0.0.0.0

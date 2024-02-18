@@ -8,7 +8,7 @@ ARG			CERTS_CRT
 
 # Update and upgrade system & install Nginx and OpenSSL
 RUN 		apt -y update && apt -y upgrade
-RUN 		apt -y install nginx openssl
+RUN 		apt -y install nginx openssl 
 
 # Generate self-signed certificate
 RUN 		openssl req -x509 -sha256 -nodes \

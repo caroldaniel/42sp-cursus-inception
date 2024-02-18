@@ -17,15 +17,16 @@ RUN			chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
 RUN			chmod 777 /var/run/mysqld
 
 # Copy the MariaDB configuration file and dump.sql file
-COPY        ./conf/mariadb.cnf /etc/mysql/mariadb.conf.d/mariadb.cnf
+COPY        ./conf/mariadb.cnf /etc/mysql/mariadb.conf.d/
+RUN         chmod 644 /etc/mysql/mariadb.conf.d/mariadb.cnf
 # COPY      ./conf/dump.sql /tmp/dump.sql
-
-# Expose port to the host
-EXPOSE      3306
 
 # Execute MariaDB Initialization script
 COPY        ./tools/init.sh /usr/local/bin/
 RUN         bash /usr/local/bin/init.sh
+
+# Expose port to the host
+EXPOSE      3306
 
 # Run MariaDB
 ENTRYPOINT  [ "mysqld_safe" ]

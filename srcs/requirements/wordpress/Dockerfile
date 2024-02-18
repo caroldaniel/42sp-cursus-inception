@@ -5,6 +5,7 @@ FROM        debian:bullseye
 ARG         MYSQL_DATABASE
 ARG         MYSQL_USER
 ARG         MYSQL_PASSWORD
+ARG         MYSQL_HOSTNAME
 
 # Update and upgrade system & install MariaDB client, php-fpm and php-mysql and wget
 RUN         apt -y update && apt -y upgrade
