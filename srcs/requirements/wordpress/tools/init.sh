@@ -12,7 +12,7 @@ cp /var/www/html/wordpress/wp-config-sample.php /var/www/html/wordpress/wp-confi
 sed -i "s/database_name_here/$MYSQL_DATABASE/g" /var/www/html/wordpress/wp-config.php
 sed -i "s/username_here/$MYSQL_USER/g" /var/www/html/wordpress/wp-config.php
 sed -i "s/password_here/$MYSQL_PASSWORD/g" /var/www/html/wordpress/wp-config.php
-sed -i "s/localhost/$MYSQL_HOSTNAME/g" /var/www/html/wordpress/wp-config.php
+sed -i "s/localhost/$MYSQL_HOSTNAME:3306/g" /var/www/html/wordpress/wp-config.php
 
 # Change ownership of WordPress files
 chown -R www-data:www-data /var/www/html/wordpress

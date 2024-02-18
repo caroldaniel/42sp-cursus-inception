@@ -9,7 +9,7 @@ ARG         MYSQL_HOSTNAME
 
 # Update and upgrade system & install MariaDB client, php-fpm and php-mysql and wget
 RUN         apt -y update && apt -y upgrade
-RUN         apt -y install wget php7.4-fpm php7.4-mysql
+RUN         apt -y install wget php7.4-fpm php7.4-mysql mariadb-client
 
 # Configure PHP so it can communicate with NGINX
 RUN         mv /etc/php/7.4/fpm/pool.d/www.conf /etc/php/7.4/fpm/pool.d/www.conf.default
