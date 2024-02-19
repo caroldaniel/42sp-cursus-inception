@@ -44,9 +44,9 @@ Bonus
 </h3>
 
 > <i>For the <b>bonus</b> part we should:
-> 1. Set up redis cache for the WordPress website in order to properly manage the cache; 
-> 2. Set up a FTP server container pointing to the volume of the WordPress website; 
-> 3. Create a simple static website in the language of our choice except PHP (Yes, PHP is excluded!). For example, a showcase site or a site for presenting your resume. 
+> 1. Set up <b>redis cache</b> for the WordPress website in order to properly manage the cache; 
+> 2. Set up a <b>FTP</b> server container pointing to the volume of the WordPress website; 
+> 3. Create a <b>simple static website</b> in the language of our choice except PHP (Yes, PHP is excluded!). For example, a showcase site or a site for presenting your resume. 
 > 4. Set up <b>Adminer</b>; 
 > 5. Set up a service of our choice that we think is useful.</i>
 
@@ -60,7 +60,7 @@ The project
 
 As I've done in the `born2beroot` project, Inception also calls for a complete implementation guide, full of twists and turns and a whole lot of concept explanaitions.
 
-As per usual, do not trust anything I say here. These guides are more for my own benefit then yours. However, I'll be happy if it cahappens to unstuck at least one lost soul in its lifetime.
+As per usual, do not trust anything I say here. These guides are more for my own benefit then yours. However, I'll be happy if it happens to unstuck at least one lost soul in its lifetime.
 
 - Implementation guide for [Mandatory](guides/Mandatory-en.md)
 - Implementation guide for the [Bonus](guides/Bonus-en.md)
