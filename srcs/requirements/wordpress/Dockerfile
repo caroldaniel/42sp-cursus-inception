@@ -11,6 +11,10 @@ ARG         MYSQL_HOSTNAME
 RUN         apt -y update && apt -y upgrade
 RUN         apt -y install wget php7.4-fpm php7.4-mysql mariadb-client
 
+##################  BONUS  ##################
+# Redis Cache
+RUN         apt -y install php7.4-redis
+
 # Configure PHP so it can communicate with NGINX
 RUN         mv /etc/php/7.4/fpm/pool.d/www.conf /etc/php/7.4/fpm/pool.d/www.conf.default
 COPY        ./conf/www.conf /etc/php/7.4/fpm/pool.d/

@@ -1,5 +1,20 @@
 version: "3.8"
 
+# Volumes
+volumes:
+  mariadb:
+    name: mariadb
+    external: true
+  wordpress:
+    name: wordpress
+    external: true
+
+# Networks
+networks:
+  inception:
+    name: inception
+    driver: bridge
+
 # Services (Containers)
 services:
   mariadb:
@@ -32,6 +47,7 @@ services:
         - MYSQL_USER
         - MYSQL_PASSWORD
         - MYSQL_HOSTNAME
+        - REDIS_PASSWORD
     networks:
       - inception
     volumes:
@@ -62,17 +78,22 @@ services:
       - mariadb
       - wordpress
 
-# Volumes
-volumes:
-  mariadb:
-    name: mariadb
-    external: true
-  wordpress:
-    name: wordpress
-    external: true
-
-# Networks
-networks:
-  inception:
-    name: inception
-    driver: bridge
+##################  BONUS  ##################
+  redis:
+    container_name: redis
+    image: redis:42
+    init: true
+    build:
+      context: ./requirements/bonus/redis
+      dockerfile: Dockerfile
+      args:
+        - REDIS_PASSWORD
+    networks:
+      - inception
+    ports:
+      - "6379:6379"
+    restart: always
+    depends_on:
+      - mariadb
+      - wordpress
+      - nginx
