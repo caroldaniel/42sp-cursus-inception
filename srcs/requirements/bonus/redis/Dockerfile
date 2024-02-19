@@ -5,7 +5,7 @@ ARG         REDIS_PASSWORD
 
 # Update and upgrade system & install Redis
 RUN         apt -y update && apt -y upgrade
-RUN         apt -y install redis-server redis-cli
+RUN         apt -y install redis-server redis-tools
 
 # Expose port
 EXPOSE      6379
