@@ -59,6 +59,16 @@ define('WP_REDIS_PASSWORD', 'your_password');
 define('WP_CACHE', true);
 ```
 
+### Make sure Redis is working
+
+To make sure Redis is working properly, you can use the `redis-cli` to connect to the Redis server and check if it is working properly. You can also use the `INFO` command to check the server's status.
+
+
+```bash
+docker exec -it redis redis-cli -a your_password
+info
+```
+
 ### Redis Dockerfile
 
 ```Dockerfile
