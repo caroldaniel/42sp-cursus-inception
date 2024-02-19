@@ -25,8 +25,11 @@
 	<span> • </span>
 	<a href="#MariaDB">MariaDB</a>
 	<span> • </span>
+	<a href="#Wordpress">Wordpress</a>
+	<span> • </span>
 	<a href="#NGINX">NGINX</a>
 	<span> • </span>
+	<a href="#COMPOSE">Docker Compose File</a>
 </b></h3>
 
 ---
@@ -508,6 +511,160 @@ ENTRYPOINT  [ "mysqld_safe" ]
 ```
 
 ---
+<h2 id="Wordpress">
+Wordpress
+</h2>
+
+![Wordpress](screenshots/wordpress.png)
+
+**Wordpress** is a free and open-source content management system written in PHP and paired with a MySQL or MariaDB database. Features include a plugin architecture and a template system, referred to within WordPress as Themes. 
+
+WordPress was originally created as a blog-publishing system but has evolved to support other types of web content including more traditional mailing lists and forums, media galleries, membership sites, learning management systems (LMS) and online stores. 
+
+WordPress is used by more than 60 million websites, including 39% of the top 10 million websites as of 2021, WordPress is one of the most popular content management system solutions in use.
+
+Setting up a Wordpress website is a very simple process. You can do it manually, by downloading the Wordpress files from the official website and setting up a LAMP stack, or you can use a tool like Docker to automate the process.
+
+First, you need to download (via curl or wget) the latest version of Wordpress. You can do so by using the following command:
+
+```bash
+curl -O https://wordpress.org/latest.tar.gz
+```
+
+Then, you need to extract the files from the tarball:
+
+```bash
+tar -xvf latest.tar.gz
+```
+
+After that, you need to move the files (or the whole foldere) to the root of your web server. You can do so by using the following command:
+
+```bash
+mv wordpress /var/www/html/
+```
+
+And then, you will need to configure your `wp-config.php` file. This file is located in the root of your Wordpress installation, and it contains all the settings that control the behavior of your Wordpress website. You can do so by using the following command:
+
+```bash
+mv /var/www/html/wordpress/wp-config-sample.php /var/www/html/wordpress/wp-config.php
+```
+
+You will need to edit the `wp-config.php` file to include the settings for your database. However you do it, it's ultimately up to you. All you need to know is to replace the following lines with the settings for your database:
+
+```php
+define('DB_NAME', 'database_name_here');
+define('DB_USER', 'username_here');
+define('DB_PASSWORD', 'password_here');
+define('DB_HOST', 'database hostname here');
+```
+
+It's important to notice that, since we will be using different containers for our database and our wordpress, you will need to replace the `DB_HOST` line with the hostname of your database container. This is the name of the service in your `docker-compose.yml` file. In our case, it will be `mariadb`.
+
+After making sure that the wp-config.php file is properly configured, you will also need to edit the `www.conf` file in your php-fpm service, to make sure that it can communicate with your Nginx server via port 9000. This is done by using the `listen` directive in the `www.conf` file locate in` /etc/php/<php-version>/fpm/pool.d/`.
+
+```conf
+[www]
+
+user = www-data
+group = www-data
+
+listen = 0.0.0.0:9000
+
+listen.owner = www-data
+listen.group = www-data
+
+pm = dynamic
+
+pm.max_children = 25
+
+pm.start_servers = 5
+
+pm.min_spare_servers = 1
+
+pm.max_spare_servers = 10
+```
+
+After setting up the Wordpress container, you will startyour Nginx server. This will be explained in the NGINX section.
+
+### 1. Setting up Wordpress for the first time
+
+Only after all your containers are up and running, you can access your website by going to the server name or IP address in your web browser. If that's not your case, come back to this section after finishing the NGINX section.
+
+In my case, `cado-car.42.fr` is the server name I will need to use, according to the project's requirements. Also, it will not accessible via port 80. 
+
+![Wordpress Install](screenshots/wp-install-00.png)
+
+After choosing the language, you will be prompted to enter the information for your website, such as the site title, the username and password for the admin user, and the admin email address. You will also be prompted to choose whether or not to allow search engines to index your site. 
+
+![Wordpress Install](screenshots/wp-install-01.png)
+
+After entering the information, you can click on the "Install WordPress" button. Confirm that the data you entered is correct, and then click on the "LogIn" button.
+
+![Wordpress Install](screenshots/wp-install-02.png)
+
+
+You will be prompted to log in to your website using the username and password you entered earlier. 
+
+![Wordpress Install](screenshots/wp-install-03.png)
+
+After logging in, you will be able to access the admin dashboard, where you can manage your website, create new posts and pages, and install new themes and plugins.
+
+![Wordpress Install](screenshots/wp-install-04.png)
+
+This is all for a first time Wordpress installation. However, we will be using a Dockerfile to automate the process of setting up your Wordpress website. 
+
+To make sure that it's your website that is going to be deployed, you will need to create a dump of your database, and then import it into your MariaDB container. This is done by using the `mysqldump` service, as it was explained in the MariaDB section.
+
+Also, in case you have any custom themes or plugins, you will need to copy them to the `wp-content` folder in your Wordpress installation. This is the folder where all the themes and plugins for your website are stored. 
+
+In my case, I used the default theme, but imported a few customized images. Therefore, I only needed to copy my `wp-content/uploads` folder into my wordpress container.
+
+
+
+### 2. Wordpress Dockerfile
+
+```dockerfile
+# Base image
+FROM        debian:bullseye
+
+# Define build arguments passed from docker-compose.yml
+ARG         MYSQL_DATABASE
+ARG         MYSQL_USER
+ARG         MYSQL_PASSWORD
+ARG         MYSQL_HOSTNAME
+
+# Update and upgrade system & install MariaDB client, php-fpm and php-mysql and wget
+RUN         apt -y update && apt -y upgrade
+RUN         apt -y install wget php7.4-fpm php7.4-mysql mariadb-client
+
+# Configure PHP so it can communicate with NGINX
+RUN         mv /etc/php/7.4/fpm/pool.d/www.conf /etc/php/7.4/fpm/pool.d/www.conf.default
+COPY        ./conf/www.conf /etc/php/7.4/fpm/pool.d/
+RUN         ln -s $(find /usr/sbin -name 'php-fpm*') /usr/bin/php-fpm
+
+# Expose port
+EXPOSE      9000
+
+# Create PID directory for PHP-FPM
+RUN         mkdir -p /run/php
+RUN         chmod 755 /run/php
+
+# Execute Wordpress Initialization script
+COPY        ./tools/init.sh /usr/local/bin/
+RUN         bash /usr/local/bin/init.sh
+
+# Copy Wordpress customized content
+RUN         mkdir -p /var/www/html/wordpress/wp-content/uploads/2024/02/
+COPY        ./conf/uploads/* /var/www/html/wordpress/wp-content/uploads/2024/02/
+RUN         chmod -R 755 /var/www/html/wordpress/wp-content/uploads/
+RUN         chmod 644 /var/www/html/wordpress/wp-content/uploads/2024/02/*
+RUN         chown -R www-data:www-data /var/www/html/wordpress/wp-content/uploads/
+
+# Run php-fpm
+ENTRYPOINT  [ "php-fpm", "-F" ]
+```
+
+---
 
 <h2 id="NGINX">
 NGINX
@@ -642,4 +799,93 @@ EXPOSE 		443
 
 # Run NGINX
 ENTRYPOINT	[ "nginx", "-g", "daemon off;" ]
+```
+
+---
+
+<h2 id="COMPOSE">
+Docker Compose File
+</h2>
+
+Now that we have all of our services set up, let's see how our Docker Compose file will look like.
+
+```yaml
+version: "3.8"
+
+# Services (Containers)
+services:
+  mariadb:
+    container_name: mariadb
+    image: mariadb:42
+    init: true
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+      args:
+        - MYSQL_DATABASE
+        - MYSQL_USER
+        - MYSQL_PASSWORD
+        - MYSQL_ROOT_PASSWORD
+    networks:
+      - inception
+    volumes:
+      - mariadb:/var/lib/mysql
+    restart: always
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress:42
+    init: true
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+      args:
+        - MYSQL_DATABASE
+        - MYSQL_USER
+        - MYSQL_PASSWORD
+        - MYSQL_HOSTNAME
+    networks:
+      - inception
+    volumes:
+      - wordpress:/var/www/html
+    restart: always
+    depends_on:
+      - mariadb
+
+  nginx:
+    container_name: nginx
+    image: nginx:42
+    init: true
+    build:
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
+      args:
+        - DOMAIN_NAME
+        - CERTS_KEY
+        - CERTS_CRT
+    networks:
+      - inception
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress:/var/www/html
+    restart: always
+    depends_on:
+      - mariadb
+      - wordpress
+
+# Volumes
+volumes:
+  mariadb:
+    name: mariadb
+    external: true
+  wordpress:
+    name: wordpress
+    external: true
+
+# Networks
+networks:
+  inception:
+    name: inception
+    driver: bridge
 ```
