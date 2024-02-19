@@ -47,7 +47,6 @@ services:
         - MYSQL_USER
         - MYSQL_PASSWORD
         - MYSQL_HOSTNAME
-        - REDIS_PASSWORD
     networks:
       - inception
     volumes:
@@ -86,8 +85,6 @@ services:
     build:
       context: ./requirements/bonus/redis
       dockerfile: Dockerfile
-      args:
-        - REDIS_PASSWORD
     networks:
       - inception
     ports:

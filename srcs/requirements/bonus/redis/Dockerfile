@@ -1,8 +1,5 @@
 FROM        debian:bullseye
 
-# Define build arguments passed from docker-compose.yml
-ARG         REDIS_PASSWORD
-
 # Update and upgrade system & install Redis
 RUN         apt -y update && apt -y upgrade
 RUN         apt -y install redis-server redis-tools
