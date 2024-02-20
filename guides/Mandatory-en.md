@@ -526,6 +526,8 @@ WordPress was originally created as a blog-publishing system but has evolved to 
 
 WordPress is used by more than 60 million websites, including 39% of the top 10 million websites as of 2021, WordPress is one of the most popular content management system solutions in use.
 
+### 1. Configure Wordpress
+
 Setting up a Wordpress website is a very simple process. You can do it manually, by downloading the Wordpress files from the official website and setting up a LAMP stack, or you can use a tool like Docker to automate the process.
 
 First, you need to download (via curl or wget) the latest version of Wordpress. You can do so by using the following command:
@@ -563,6 +565,41 @@ define('DB_HOST', 'database hostname here');
 
 It's important to notice that, since we will be using different containers for our database and our wordpress, you will need to replace the `DB_HOST` line with the hostname of your database container. This is the name of the service in your `docker-compose.yml` file. In our case, it will be `mariadb`.
 
+Another way to properly configure your Wordpress website is through the wp-cli. This is a command line tool that allows you to manage your Wordpress website from the command line. You can use it to install Wordpress, configure your website, and manage your content. If you're up for the bonus part, it will be a great tool to use.
+
+### 2. Configure Wordpress via wp-cli
+
+First, you will need to install the wp-cli. You can do so by using the following command:
+
+```bash
+wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+```
+
+Make sure your wp-cli.phar file is executable:
+
+```bash
+chmod +x wp-cli.phar
+```
+
+Then, you can move the wp-cli.phar file to your `/usr/local/bin` directory, so that you can use it as a command line tool:
+
+```bash
+mv wp-cli.phar /usr/local/bin/wp
+```
+
+Then, you can use wp-cli to set up your Wordpress website. You can do so by using the following command:
+
+```bash
+wp config set DB_NAME database_name_here
+wp config set DB_USER username_here
+wp config set DB_PASSWORD password_here
+wp config set DB_HOST mariadb
+```
+
+You can check your wp-config.php file to make sure that the settings were properly configured. 
+
+### 3. Configure php-fpm
+
 After making sure that the wp-config.php file is properly configured, you will also need to edit the `www.conf` file in your php-fpm service, to make sure that it can communicate with your Nginx server via port 9000. This is done by using the `listen` directive in the `www.conf` file locate in` /etc/php/<php-version>/fpm/pool.d/`.
 
 ```conf
@@ -589,7 +626,7 @@ pm.max_spare_servers = 10
 
 After setting up the Wordpress container, you will startyour Nginx server. This will be explained in the NGINX section.
 
-### 1. Setting up Wordpress for the first time
+### 4. Setting up Wordpress for the first time
 
 Only after all your containers are up and running, you can access your website by going to the server name or IP address in your web browser. If that's not your case, come back to this section after finishing the NGINX section.
 
@@ -622,9 +659,7 @@ Also, in case you have any custom themes or plugins, you will need to copy them 
 
 In my case, I used the default theme, but imported a few customized images. Therefore, I only needed to copy my `wp-content/uploads` folder into my wordpress container.
 
-
-
-### 2. Wordpress Dockerfile
+### 5. Wordpress Dockerfile
 
 ```dockerfile
 # Base image

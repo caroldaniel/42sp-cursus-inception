@@ -2,31 +2,33 @@
 
 ##################  MANDATORY  ##################
 
-# Donwload and extract WordPress
+# Download and extract WordPress
 wget https://wordpress.org/latest.tar.gz
 tar -xvf latest.tar.gz
 mkdir -p /var/www/html/
 mv wordpress/* /var/www/html/
 rm -rf latest.tar.gz
 
-# Configure WordPress config with database information
-cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
-sed -i "s/database_name_here/$MYSQL_DATABASE/g" /var/www/html/wp-config.php
-sed -i "s/username_here/$MYSQL_USER/g" /var/www/html/wp-config.php
-sed -i "s/password_here/$MYSQL_PASSWORD/g" /var/www/html/wp-config.php
-sed -i "s/localhost/$MYSQL_HOSTNAME:3306/g" /var/www/html/wp-config.php
-
 # Change ownership of WordPress files
 chown -R www-data:www-data /var/www/html/
 
+# Download wp-cli directly to the user's bin directory
+wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O /usr/local/bin/wp
+chmod +x /usr/local/bin/wp
+
+# Configure WordPress
+mv /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+wp config set DB_NAME $MYSQL_DATABASE --allow-root --path=/var/www/html/
+wp config set DB_USER $MYSQL_USER --allow-root --path=/var/www/html/
+wp config set DB_PASSWORD $MYSQL_PASSWORD --allow-root --path=/var/www/html/
+wp config set DB_HOST mariadb --allow-root --path=/var/www/html/
+
 ##################  BONUS  ##################
+################ Redis Cache ################
 
-# Redis Cache
+# Configure Redis Cache
+wp config set WP_REDIS_PORT 6379 --add --type=constant --allow-root --path=/var/www/html/
+wp config set WP_REDIS_HOST redis --add --type=constant --allow-root --path=/var/www/html/
 
-echo -e "\n\
-################## Redis Cache ##################\n\
-define('WP_CACHE', true);\n\
-define('WP_REDIS_HOST', 'redis');\n\
-define('WP_REDIS_PORT', '6379');\n\
-define('WP_REDIS_TIMEOUT', 1);\
-" | tee -a /var/www/html/wp-config.php
+# Configure WordPress
+wp config set WP_CACHE true --add --type=constant --allow-root --path=/var/www/html/
