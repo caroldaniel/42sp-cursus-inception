@@ -11,6 +11,8 @@
 <h3 align="center"><b>
 	<a href="#Redis">Redis Cache</a>
 	<span> • </span>
+	<a href="#FTP">FTP Server</a>
+	<span> • </span>
 </b></h3>
 
 ---
@@ -120,6 +122,118 @@ ENTRYPOINT  [ "redis-server", "--protected-mode", "no" ]
 ```
 
 ---
+<h2 id="FTP">
+FTP Server
+</h2>
+
+![FTP](./screenshots/ftp.png)
+
+An FTP server is a software that allows you to transfer files from one computer to another over the internet. It is a very useful tool for web developers, as it allows them to upload files to a server without having to use the command line. It is also a great tool for sharing files with other people, as it allows you to create accounts for other people to access your server.
+
+In this part of the project, we will build a whole container for an FTP server. We will use `vsftpd` as our FTP server, and it will point to the wordpress directory. This means that you will be able to upload files to your wordpress server using an FTP client.
+
+### 1. Install vsftpd
+
+To start, let's prepare the new container for `vsftpd`. You will need to install `vsftpd` in your container, and you will also need to expose the port 21. You will also need to set the `command` for the container, so it starts the `vsftpd` server when the container is started.
+
+To first start the configuration of the `vsftpd` server, you will need to create a new user. This is necessary because the FTP server will need to have a user to authenticate the connections. You can do this by running the following command:
+
+```bash
+adduser ftpuser --disabled-password
+```
+
+Then, you will need to set the password for the user. You can do this by running the following command:
+
+```bash
+echo "ftpuser:password" | chpasswd
+```
+
+After creating the user, you will need to configure the `vsftpd` server. The FTP user you just created will need to be on the server user list.
+
+```bash
+echo "ftpuser" | tee -a /etc/vsftpd/vsftpd.userlist
+```
+Then, create the folder where the FTP server will point to. This is the folder where you will be able to upload files to your server. Per the project's requirements, we will point the FTP server to the wordpress directory in your docker-compose file.
+
+```bash
+mkdir -p /home/ftp
+chown nobody:nogroup /home/ftp
+chmod a-w /home/ftp
+
+mkdir -p /home/ftp/wordpress
+chown ftpuser:ftpuser /home/ftp/wordpress
+```
+
+And at last, you will need to edit the `vsftpd.conf` file to set up a few details about the `vsftpd` server. Here's a list of the most important configurations you might want to change:
+
+- `write_enable`: This option allows the FTP user to upload files to the server. The default is commented, and you will need to uncomment it.
+- `chroot_local_user`: This option will jail the FTP user to its home directory. The default is commented, and you will need to uncomment it.
+- `local_enable`: This option allows the FTP user to log in to the server. You will need to add this line to the file.
+- `allow_writeable_chroot`: This option will allow the FTP user to upload files to the server. You will need to add this line to the file.
+- `local_root`: This option will set the root directory for the FTP server. You will need to add this line to the file.
+- `pasv_enable`: This option will enable passive mode for the FTP server. You will need to add this line to the file.
+- `pasv_min_port`: This option will set the minimum port for passive mode. You will need to add this line to the file.
+- `pasv_max_port`: This option will set the maximum port for passive mode. You will need to add this line to the file.
+- `userlist_file`: This option will set the file with the list of users that can log in to the server. You will need to add this line to the file.
+
+After all that, restart your `vsftpd` service.
+
+### 2. Make sure FTP is working
+To make sure the FTP server is working properly, you can upload a file to the server through an FTP client. To do it, you will need to download an FTP client and connect to your server. You can use the following commands:
+
+```bash
+docker exec -it ftp bash
+apt -y install ftp
+ftp localhost
+```
+
+Then, you will need to log in to the server using the FTP user you just created. You can use the following commands:
+
+```bash
+ftp> open localhost
+ftp> Name (localhost:root): ftpuser
+ftp> Password: password
+```
+
+After logging in, you will need to upload a file to the server. It could be any file of your choice (create one with vim, if you will). You can use the following commands:
+
+```bash
+ftp> put file.txt
+```
+
+Then, you can check if the file was uploaded to the server by running the following command in you local machine:
+
+```bash
+ls /home/$USER/data/wordpress
+```
+
+If the file is there, that means that the FTP server is working properly, and you can now upload files to your server using an FTP client.
+
+### 3. FTP Dockerfile
+
+```Dockerfile
+FROM        debian:bullseye
+
+# Define build arguments passed from docker-compose.yml
+ARG         FTP_USER
+ARG         FTP_PASSWORD
+
+# Update and upgrade system & install FTP
+RUN         apt -y update && apt -y upgrade
+RUN         apt -y install vsftpd
+
+# Set up FTP
+COPY        ./tools/init.sh /usr/local/bin/
+RUN         chmod 755 /usr/local/bin/init.sh
+RUN         bash /usr/local/bin/init.sh
+
+# Expose port
+EXPOSE      21
+
+# Run FTP
+ENTRYPOINT  [ "vsftpd" ]
+```
+
 
 
 
