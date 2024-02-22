@@ -107,8 +107,9 @@ services:
     networks:
       - inception
     volumes:
-      - wordpress:/home/ftp/wordpress
+      - wordpress:/home/$FTP_USER/ftp
     ports:
+      - "20:20"
       - "21:21"
       - "21000-21010:21000-21010"
     restart: always
@@ -116,4 +117,3 @@ services:
       - mariadb
       - wordpress
       - nginx
-      - redis
