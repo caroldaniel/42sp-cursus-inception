@@ -13,6 +13,11 @@
 	<span> • </span>
 	<a href="#FTP">FTP Server</a>
 	<span> • </span>
+	<a href="#Static">Static Website</a>
+	<span> • </span>
+	<a href="#Adminer">Adminer</a>
+	<span> • </span>
+	<a href="#Optional">Optional</a>
 </b></h3>
 
 ---
@@ -156,12 +161,9 @@ echo "ftpuser" | tee -a /etc/vsftpd/vsftpd.userlist
 Then, create the folder where the FTP server will point to. This is the folder where you will be able to upload files to your server. Per the project's requirements, we will point the FTP server to the wordpress directory in your docker-compose file.
 
 ```bash
-mkdir -p /home/ftp
-chown nobody:nogroup /home/ftp
-chmod a-w /home/ftp
-
-mkdir -p /home/ftp/wordpress
-chown ftpuser:ftpuser /home/ftp/wordpress
+mkdir -p /home/ftpuser/data/wordpress
+chown ftpuser:ftpuser /home/ftpuser/data/wordpress
+chmod 755 /home/ftpuser/data/wordpress
 ```
 
 And at last, you will need to edit the `vsftpd.conf` file to set up a few details about the `vsftpd` server. Here's a list of the most important configurations you might want to change:
@@ -218,23 +220,37 @@ FROM        debian:bullseye
 ARG         FTP_USER
 ARG         FTP_PASSWORD
 
+# Set environment variables
+ENV         FTP_USER=${FTP_USER}
+ENV         FTP_PASSWORD=${FTP_PASSWORD}
+
 # Update and upgrade system & install FTP
 RUN         apt -y update && apt -y upgrade
-RUN         apt -y install vsftpd
+RUN         apt -y install vsftpd ftp
 
 # Set up FTP
+COPY        ./conf/vsftpd.conf /usr/local/bin/
 COPY        ./tools/init.sh /usr/local/bin/
 RUN         chmod 755 /usr/local/bin/init.sh
-RUN         bash /usr/local/bin/init.sh
 
 # Expose port
-EXPOSE      21
+EXPOSE      20 21 21100-21110
 
 # Run FTP
-ENTRYPOINT  [ "vsftpd" ]
+ENTRYPOINT  [ "bash", "/usr/local/bin/init.sh" ]
 ```
 
-
-
+---
+<h2 id="Static">
+Static Website
+</h2>
 
 ---
+<h2 id="Adminer">
+Adminer
+</h2>
+
+---
+<h2 id="Optional">
+Optional
+</h2>
