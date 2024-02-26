@@ -18,7 +18,10 @@ COPY		./conf/package*.json .
 RUN			npm install
 
 # Copy the source code
-COPY		./srcs/* .
+RUN         mkdir -p /usr/src/app/public
+COPY        ./srcs/public/* /usr/src/app/public/
+RUN         mkdir -p /usr/src/app/src
+COPY        ./srcs/src/* /usr/src/app/src/
 
 # Expose port
 EXPOSE		3000

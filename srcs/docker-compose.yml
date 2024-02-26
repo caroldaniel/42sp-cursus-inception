@@ -79,6 +79,7 @@ services:
     depends_on:
       - mariadb
       - wordpress
+      - static
 
 ##################  BONUS  ##################
   redis:
@@ -94,8 +95,6 @@ services:
       - "6379:6379"
     restart: always
     depends_on:
-      - mariadb
-      - wordpress
       - nginx
 
   ftp:
@@ -118,8 +117,6 @@ services:
       - "21000-21010:21000-21010"
     restart: always
     depends_on:
-      - mariadb
-      - wordpress
       - nginx
 
   static:

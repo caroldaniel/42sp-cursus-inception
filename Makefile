@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: cado-car <cado-car@student.42sp.org.br>    +#+  +:+       +#+         #
+#    By: user42 <user42@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/15 09:51:34 by cado-car          #+#    #+#              #
-#    Updated: 2024/02/26 10:51:36 by cado-car         ###   ########.fr        #
+#    Updated: 2024/02/26 19:10:01 by user42           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,7 @@ VOL_DIR			= /home/$(USER)/data
 
 WP_NAME			= wordpress
 MDB_NAME		= mariadb
-STAT_NAME		= mariadb
+STAT_NAME		= static
 
 all:		volumes hosts up
 			@echo "\n"
@@ -65,6 +65,8 @@ clean:		down
 			sudo rm -rf /home/$(USER)/data/${WP_NAME}
 			docker volume rm ${MDB_NAME}
 			sudo rm -rf /home/$(USER)/data/${MDB_NAME}
+			docker volume rm ${STAT_NAME}
+			sudo rm -rf /home/$(USER)/data/${STAT_NAME}
 			@echo "${RED}-----Volumes Removed-----${NC}"
 			@echo "${YELLOW}-----Removing domain name from hosts file-----${NC}"
 			sudo sed -i '/127\.0\.0\.1\t${USER}\.42\.fr/d' /etc/hosts
