@@ -245,6 +245,32 @@ ENTRYPOINT  [ "bash", "/usr/local/bin/init.sh" ]
 Static Website
 </h2>
 
+This part of the project is a bit different from the others. Now, we have free rein to create a static website of our choice. This means that you can create a website about anything you want, and you can use any technology you want. It may seem a bit daunting at first, but it is actually a great opportunity to learn something new and to create something that you can be proud of.
+
+For this part of the project, I decided to create a simple website using React. I chose React because it is a very popular library, and it is also a great tool for creating static websites (and non-static websites as well). 
+
+![Static](./screenshots/react.png)
+
+First, let's understand what a static website is. A static website is a website that is made up of HTML, CSS, and some automation language script (like Javascript). This means that you will not need a server to run your website, and you will not need to use a database to store your data. 
+
+In other words, a static website is a site that is ready at build time, and is served to the user as is. This means that the user will not need to wait for the server to process the request, and the user will not need to wait for the database to retrieve the data. This makes static websites a lot faster than traditional websites, and it also makes them a lot cheaper to host.
+
+For this project, I chose to stretch a little bit of what static means. I chose to use an API to retrieve the data for my website. This means that my website is not entirely static, but since I'm not the one hosting the API, I'm still considering it a static website.
+
+For this part, though, I will not be doing a step-by-step guide. Since this is such an open-ended part of the project, I will leave it to you to figure things out on your own. I will, however, give you a few tips on how to integrate your static website with your whole application.
+
+### 1. Where to host your website
+
+This might seem simple, but the options are actually quite limitless. You can create a container with a server to host you website and simply put it in the same compose file, or you can use the already existing Nginx server to host your website. Also, you might host it on different ports, create different domain names, or even use a different server. The choice is yours.
+
+However, I decided to integrate my site the best I could with the existing infrastructure. I created a new container with only the nodejs and npm installed, and I used it to build my website. Then, I used the Nginx server to host my website through reverse proxy. 
+
+The domain and ports exposed to the public are still the same, so that seemed like a safer bet to me. Also, I had to edit my nginx configuration, and to make maintenance easier, I put my entire source code in a separate volume, so I could edit it without having to rebuild the container.
+
+Now, the only question remained is...
+
+Do you like Pokemon?
+
 ---
 <h2 id="Adminer">
 Adminer
