@@ -1,0 +1,27 @@
+.search-input {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    text-align: center; 
+    font-size: 20px;
+}
+
+.search-input::placeholder { 
+    color: grey;
+    text-align: center;
+    font-size: 15px;
+}
+
+.search-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    opacity: 0.9;
+}

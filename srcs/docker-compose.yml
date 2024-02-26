@@ -8,6 +8,9 @@ volumes:
   wordpress:
     name: wordpress
     external: true
+  static:
+    name: static
+    external: true
 
 # Networks
 networks:
@@ -71,6 +74,7 @@ services:
       - "443:443"
     volumes:
       - wordpress:/var/www/html
+      - static:/usr/share/nginx/html
     restart: always
     depends_on:
       - mariadb
@@ -82,7 +86,7 @@ services:
     image: redis:42
     init: true
     build:
-      context: ./requirements/bonus/redis
+      context: ./requirements/bonus/redis-cache
       dockerfile: Dockerfile
     networks:
       - inception
@@ -99,7 +103,7 @@ services:
     image: ftp:42
     init: true
     build:
-      context: ./requirements/bonus/ftp
+      context: ./requirements/bonus/ftp-server
       dockerfile: Dockerfile
       args:
         - FTP_USER
@@ -117,3 +121,18 @@ services:
       - mariadb
       - wordpress
       - nginx
+
+  static:
+    container_name: static
+    image: static:42
+    init: true
+    build:
+      context: ./requirements/bonus/static-website
+      dockerfile: Dockerfile
+    networks:
+      - inception
+    volumes:
+      - static:/usr/src/app
+    ports:
+      - "3000:3000"
+    restart: always

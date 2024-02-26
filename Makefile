@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: user42 <user42@student.42.fr>              +#+  +:+       +#+         #
+#    By: cado-car <cado-car@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/15 09:51:34 by cado-car          #+#    #+#              #
-#    Updated: 2024/02/17 20:22:44 by user42           ###   ########.fr        #
+#    Updated: 2024/02/26 10:51:36 by cado-car         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,6 +21,7 @@ VOL_DIR			= /home/$(USER)/data
 
 WP_NAME			= wordpress
 MDB_NAME		= mariadb
+STAT_NAME		= mariadb
 
 all:		volumes hosts up
 			@echo "\n"
@@ -34,9 +35,11 @@ all:		volumes hosts up
 volumes:
 			@echo "${YELLOW}-----Creating Docker Volumes-----${NC}"
 			sudo mkdir -p ${VOL_DIR}/${WP_NAME}
-			docker volume create --driver local --opt type=none --opt device=${VOL_DIR}/${WP_NAME} --opt o=bind ${WP_NAME}
+			sudo docker volume create --driver local --opt type=none --opt device=${VOL_DIR}/${WP_NAME} --opt o=bind ${WP_NAME}
 			sudo mkdir -p ${VOL_DIR}/${MDB_NAME}
-			docker volume create --driver local --opt type=none --opt device=${VOL_DIR}/${MDB_NAME} --opt o=bind ${MDB_NAME}
+			sudo docker volume create --driver local --opt type=none --opt device=${VOL_DIR}/${MDB_NAME} --opt o=bind ${MDB_NAME}
+			sudo mkdir -p ${VOL_DIR}/${STAT_NAME}
+			sudo docker volume create --driver local --opt type=none --opt device=${VOL_DIR}/${STAT_NAME} --opt o=bind ${STAT_NAME}
 			@echo "${GREEN}-----Volumes Created-----${NC}"
 
 hosts:
