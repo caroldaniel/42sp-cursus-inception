@@ -91,8 +91,6 @@ services:
       dockerfile: Dockerfile
     networks:
       - inception
-    ports:
-      - "6379:6379"
     restart: always
     depends_on:
       - nginx
@@ -130,6 +128,19 @@ services:
       - inception
     volumes:
       - static:/usr/src/app
-    ports:
-      - "3000:3000"
     restart: always
+
+  adminer:
+    container_name: adminer
+    image: adminer:42
+    init: true
+    build:
+      context: ./requirements/bonus/adminer
+      dockerfile: Dockerfile
+    networks:
+      - inception
+    volumes:
+      - wordpress:/var/www/html
+    restart: always
+    depends_on:
+      - wordpress

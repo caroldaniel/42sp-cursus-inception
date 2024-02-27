@@ -1,3 +1,4 @@
+# Base image
 FROM        debian:bullseye
 
 # Define build arguments passed from docker-compose.yml
