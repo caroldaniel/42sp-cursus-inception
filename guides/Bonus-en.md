@@ -17,7 +17,7 @@
 	<span> • </span>
 	<a href="#Adminer">Adminer</a>
 	<span> • </span>
-	<a href="#Optional">Optional</a>
+	<a href="#cAdvisor">cAdvisor</a>
 </b></h3>
 
 ---
@@ -276,7 +276,98 @@ Do you like Pokemon?
 Adminer
 </h2>
 
+![Adminer](./screenshots/adminer.jpg)
+
+Adminer is a database management tool that allows you to manage your databases through a web interface. It is a great tool for web developers, as it allows them to manage their databases without having to use the command line. It is also a great tool for sharing databases with other people, as it allows you to create accounts for other people to access your databases.
+
+In this part of the project, we will build a whole container for Adminer. We will use `adminer` as our database management tool, and it will point to the database. This means that you will be able to manage your database through a web interface.
+
+### 1. Install Adminer
+
+Before installing adminer, you need to make sure you've got the wordpress volume mounted at the /var/www/html directory in your adminer container. Then, you will need to download `adminer` to that folder and make the www-data user the owner of the file. You can do this by running the following commands:
+
+```bash
+wget "http://www.adminer.org/latest.php" -O /var/www/html/adminer.php
+chown www-data:www-data /var/www/html/adminer.php
+chmod 755 /var/www/html/adminer.php
+```
+
+### 2. Make sure Adminer is working
+
+To make sure Adminer is working properly, you can access the web interface through your browser. You can do this by going to `localhost/adminer.php` in your browser. You will need to log in to the web interface using your mariadb credentials.
+
+If you can access the web interface, that means that Adminer is working properly, and you can now manage your database through a web interface.
+
+### 3. Adminer Dockerfile
+
+```Dockerfile
+# Base image
+FROM        debian:bullseye
+
+# Update and upgrade system & install wget and php
+RUN         apt -y update && apt -y upgrade
+RUN         apt -y install wget 
+
+# Copy Entrypoint script
+COPY        ./tools/entrypoint.sh /usr/local/bin/
+RUN         chmod 755 /usr/local/bin/entrypoint.sh
+
+# Run entrypoint script
+ENTRYPOINT  [ "bash", "/usr/local/bin/entrypoint.sh" ]
+```
+
 ---
-<h2 id="Optional">
-Optional
+<h2 id="cAdvisor">
+cAdvisor
 </h2>
+
+For the last bonus part, I could choose any service I wanted to integrate with my application. I chose to use cAdvisor, a tool that allows you to monitor your containers through a web interface. It is a great tool for web developers, as it allows them to monitor their containers without having to use the command line. It is also a great tool for sharing containers with other people, as it allows you to create accounts for other people to access your containers.
+
+Also, it's super easy to install and run, so that's a plus.
+
+![cAdvisor](./screenshots/cadvisor.png)
+
+`cAdvisor` is a tool that allows you to monitor your containers through a web interface. It is a great tool for web developers, as it allows them to monitor their containers without having to use the command line. It is also a great tool for sharing containers with other people, as it allows you to create accounts for other people to access your containers.
+
+In this part of the project, we will build a whole container for cAdvisor. We will use `cAdvisor` as our container monitoring tool, and it will point to the docker daemon. This means that you will be able to monitor your containers through a web interface.
+
+### 1. Install cAdvisor
+
+To start, let's prepare the new container for `cAdvisor`. You will need to install `cAdvisor` in your container, and you will also need to expose the port 8080. You will also need to set the `command` for the container, so it starts the `cAdvisor` server when the container is started.
+
+The most important part is to mount the docker volumes to the cAdvisor container. This is necessary because cAdvisor will need to access the docker daemon to monitor the containers. You can do this by adding the following lines to your docker-compose file:
+
+```yaml
+volumes:
+  - /:/rootfs:ro
+  - /var/run:/var/run:rw
+  - /sys:/sys:ro
+  - /var/lib/docker/:/var/lib/docker:ro
+```
+
+### 2. Make sure cAdvisor is working
+
+To make sure cAdvisor is working properly, you can access the web interface through your browser. You can do this by going to `localhost:8080` in your browser. You will need to log in to the web interface using your docker credentials (if you have any).
+
+If you can access the web interface, that means that cAdvisor is working properly, and you can now monitor your containers through a web interface.
+
+### 3. cAdvisor Dockerfile
+
+```Dockerfile
+# Base image
+FROM 		debian:bullseye
+
+# Update and upgrade system & install wget
+RUN 		apt -y update && apt -y upgrade
+RUN 		apt -y install wget 
+
+# Change working directory
+WORKDIR		/usr/local/bin
+
+# Download and install cAdvisor
+RUN 		wget https://github.com/google/cadvisor/releases/download/v0.39.0/cadvisor
+RUN 		chmod +x cadvisor
+
+# Execute cAdvisor
+ENTRYPOINT	[ "cadvisor" ]
+```
