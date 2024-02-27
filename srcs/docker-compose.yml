@@ -144,3 +144,21 @@ services:
     restart: always
     depends_on:
       - wordpress
+
+  cadvisor:
+    container_name: cadvisor
+    image: cadvisor:42
+    init: true
+    build:
+      context: ./requirements/bonus/cadvisor
+      dockerfile: Dockerfile
+    networks:
+      - inception
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: always
