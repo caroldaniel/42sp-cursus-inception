@@ -260,7 +260,7 @@ If you want, you can edit the database directly from the adminer interface, add 
 
 #### 5. Is the service of our choice set up?
 
-In my case, cAdvisor is the service of my choice. You can access it by going to `https://cado-car.42.fr:8080`. You should see the cAdvisor interface.
+In my case, cAdvisor is the service of my choice. You can access it by going to `cado-car.42.fr:8080`. You should see the cAdvisor interface.
 
 You can check the containers running, the resources they're using, and so on. It's a very useful tool to monitor the containers running in your machine.
 
