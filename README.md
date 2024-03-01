@@ -69,4 +69,4 @@ As per usual, do not trust anything I say here. These guides are more for my own
 
 To make things easier during evaluation (or simply to whoever may want to clone and test my project), I've also written an evaluation guide. It's a simple step-by-step guide to test the project and check if everything is working as expected.
 
-- Evaluation guide for [Mandatory](guides/Evaluation-en.md)
+-  [Evaluation guide](guides/Evaluation-en.md)
