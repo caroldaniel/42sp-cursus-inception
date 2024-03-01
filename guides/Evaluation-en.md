@@ -186,6 +186,20 @@ cat /home/cado-car/data/wordpress/wp-config.php
 
 You should see the configuration of the wordpress website in full.
 
+Now, to check the website itself, you can access it through the browser. You should see the website up and running.
+
+There are 2 users: One adminer, `oxymoron` and one regular user, `Harrison Forged`. You can log in with both of them and check the website.
+
+```
+username: oxymoron
+password: 1234oxy4321
+```
+
+```
+username: harrisonforged
+password: 1234forged4321
+```
+
 ### Bonus evaluation
 
 #### 1. Is the redis cache set up?
